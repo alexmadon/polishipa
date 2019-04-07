@@ -17,54 +17,9 @@ def debug(*args, sep=' ', end='\n'):
         pass
 
 
-
-# madon@hp:~/epitran/epitran/data/map$ more pol-Latn.csv 
-g2p_map=[
-    ("a","a"),
-    ("ą","ɔ̃"),
-    ("e","ɛ"),
-    ("ę","ɛ̃"),
-    ("i","i"),
-    ("o","ɔ"),
-    ("ó","u"),
-    ("u","u"),
-    ("y","ɨ"),
-    ("b","b"),
-    ("c","t͡s"),
-    ("ć","t͡ɕ"),
-    ("cz","t͡ʂ"),
-    ("d","d"),
-    ("dz","d͡z"),
-    ("dź","d͡ʑ"),
-    ("dż","d͡ʐ"),
-    ("f","f"),
-    ("g","ɡ"),
-    ("h","x"),
-    ("ch","x"),
-    ("j","j"),
-    ("k","k"),
-    ("l","l"),
-    ("ł","w"),
-    ("m","m"),
-    ("n","n"),
-    ("ń","ɲ"),
-    ("p","p"),
-    ("r","r"),
-    ("s","s"),
-    ("ś","ɕ"),
-    ("sz","ʂ"),
-    ("t","t"),
-    ("w","v"),
-    ("z","z"),
-    ("ź","ʑ"),
-    ("ż","ʐ"),
-    ("rz","ʐ"),
-]
-
-
-
-# madon@hp:~/epitran/epitran/data/pre$ cat pol-Latn.txt 
-rules_text="""
+def get_rules_text():
+    # madon@hp:~/epitran/epitran/data/pre$ cat pol-Latn.txt 
+    rules_text="""
 % Symbols
 ::nasal_vowel:: = ą|ę
 ::vowel:: = a|ą|e|ę|i|o|ó|u|y
@@ -72,10 +27,26 @@ rules_text="""
 ::consonant:: = b|c|ć|cz|d|dź|dż|f|g|h|ch|j|k|l|ł|m|n|ń|p|r|s|ś|sz|t|w|z|ź|ż|rz
 
 % After nasalized vowels
-0 -> m / (::nasal_vowel::) _ b|p
-0 -> n / (::nasal_vowel::) _ d|t|c|dz
-0 -> ɲ　/ (::nasal_vowel::) _ ć|dź
-0 -> ŋ　/ (::nasal_vowel::) _ g|k
+% 0 -> m / (::nasal_vowel::) _ b|p
+% 0 -> n / (::nasal_vowel::) _ d|t|c|dz
+% 0 -> ɲ　/ (::nasal_vowel::) _ ć|dź
+% 0 -> ŋ　/ (::nasal_vowel::) _ g|k
+
+
+ą -> ɔm / _ b|p
+ą -> ɔn / _ d|t|c|dz
+ą -> ɔɲ / _ ć|dź
+ą -> ɔŋ / _ g|k|ż
+
+ę -> ɛm / _ b|p
+ę -> ɛɲ / _ ć|dź|dzi
+ę -> ɛn / _ d|t|c|dz
+ę -> ɛŋ / _ g|k
+
+
+
+
+
 
 % Palatalized consonants
 ci -> t͡ɕ / _ (::vow_not_i::)
@@ -85,6 +56,43 @@ zi -> ʑ / _ (::vow_not_i::)
 ni -> ɲ / _ (::vow_not_i::)
 ki -> kʲ / _ e
 gi -> ɡʲ / _ e
+
+% alex: more ʲ
+mi -> mʲ / _ (e|ę#|ɛ)
+bi -> bʲ / _ (e|ę#|ɛ)
+pi -> pʲ / _ (e|ę#|ɛ)
+wi -> wʲ / _ (e|ę#|ɛ)
+
+mi -> mʲi / _ ł
+bi -> bʲi / _ ć
+pi -> pʲi / _ ć
+fi -> fʲi / _ l
+
+
+% 
+v -> f / _ (sz|ʂ)
+w -> f / _ (sz|ʂ)
+d -> t / _ (p|k)
+
+% alex: Final obstruent devoicing
+% b -> p / _ #|(::consonant::)(::vowel::)
+zg -> sk / _ #
+b -> p / _ #
+d -> t / _ #
+g -> k / _ #
+w -> f / _ #
+z -> s / (::vowel::) _ #
+ź -> ś / (::vowel::) _ #
+ż -> sz / _ #
+rz -> sz /_ #
+dź -> ć / _ #
+dz -> c / _ #
+
+
+si -> ɕ / _ ɔ
+zi -> ʑ / _ ɔ
+ci ->  t͡ɕ  / _ ɔ
+
 c -> t͡ɕ / _ i
 dz -> d͡ʑ / _ i
 s -> ɕ / _ i
@@ -98,12 +106,72 @@ u -> w / (::vowel::) _
 i -> j / (::vowel::) _ (::consonant::)
 i -> j / _ (::vowel::)
 
+% Even Poles may have problems with pronounciation "rz" after k, ch, p, or t. Pronouncing it as "sh" is fine in those cases
+% https://en.wikibooks.org/wiki/Polish/Polish_pronunciation
+rz -> ʂ / (k|ch|p|t) _
+
+
+
+
 % Denasalization
+
+
+
 ą -> ɔ / _ (l|ł|m|n|ɲ|ŋ)
 ę -> ɛ / _ (l|ł|m|n|ɲ|ŋ)
 ę -> ɛ / _ #
 
 """
+    return rules_text
+
+
+
+def get_g2p_map():
+    # madon@hp:~/epitran/epitran/data/map$ more pol-Latn.csv 
+    g2p_map=[
+        ("a","a"),
+        ("ą","ɔ̃"),
+        ("e","ɛ"),
+        ("ę","ɛ̃"),
+        ("i","i"),
+        ("o","ɔ"),
+        ("ó","u"),
+        ("u","u"),
+        ("y","ɨ"),
+        ("b","b"),
+        ("c","t͡s"),
+        ("ć","t͡ɕ"),
+        ("cz","t͡ʂ"),
+        ("d","d"),
+        ("dz","d͡z"),
+        ("dź","d͡ʑ"),
+        ("dż","d͡ʐ"),
+        ("f","f"),
+        ("g","ɡ"),
+        ("h","x"),
+        ("ch","x"),
+        ("j","j"),
+        ("k","k"),
+        ("l","l"),
+        ("ł","w"),
+        ("m","m"),
+        ("n","n"),
+        ("ń","ɲ"),
+        ("p","p"),
+        ("r","r"),
+        ("s","s"),
+        ("ś","ɕ"),
+        ("sz","ʂ"),
+        ("t","t"),
+        ("w","v"),
+        ("z","z"),
+        ("ź","ʑ"),
+        ("ż","ʐ"),
+        ("rz","ʐ"),
+    ]
+    return g2p_map
+
+
 
 
 
@@ -230,123 +298,144 @@ def convert(text,rerules,rules_with_symbols,g2p_dict,regex):
     text=apply_rules(rerules,rules_with_symbols,text)   
     text=apply_map(text,g2p_dict,regex)
     return text
+
+
+
+def setup():
+    rules_text=get_rules_text()
+    (symbols,rules_with_symbols)=get_symbols(rules_text)
+    debug(xx,symbols)
+    debug(xx,json.dumps(symbols,indent=4, default=str))
+    debug(xx,rules_with_symbols)
+    rules=get_rules(rules_with_symbols,symbols)
+    for rule in rules:
+        debug(xx,rule)
+    rerules=get_rerules(rules)
+
+    for rerule in rerules:
+        debug(xx,rerule)
+
+
+    # text="Moja kochana... miesiąc "
+    # text=apply_rules(rerules,rules_with_symbols,text)
+    g2p_map=get_g2p_map()
+    g2p_dict=dict(g2p_map)
+    regex=contruct_regex_from_map(g2p_dict)
+
+    # text_t=apply_map(text,g2p_dict,regex)
+    # print(">",text)
+    # print("<",text_t)
+    return (rerules,rules_with_symbols,g2p_dict,regex)
+
+
+
+
+
+if __name__ == "__main__":
+
+    (rerules,rules_with_symbols,g2p_dict,regex)=setup()
     
-(symbols,rules_with_symbols)=get_symbols(rules_text)
-debug(xx,symbols)
-debug(xx,json.dumps(symbols,indent=4, default=str))
-debug(xx,rules_with_symbols)
-rules=get_rules(rules_with_symbols,symbols)
-for rule in rules:
-    debug(xx,rule)
-rerules=get_rerules(rules)
-
-for rerule in rerules:
-    debug(xx,rerule)
-
-
-text="Moja kochana... miesiąc "
-text=apply_rules(rerules,rules_with_symbols,text)   
-g2p_dict=dict(g2p_map)
-regex=contruct_regex_from_map(g2p_dict)
-
-text_t=apply_map(text,g2p_dict,regex)
-print(">",text)
-print("<",text_t)
-# quit()
-
-
-
-# def trans(a):
-#     return a
-
-# https://mowicpopolsku.com/polish-alphabet-pronunciation/ (with sound)
-
-tests=(
-    ("umieć","ˈu.mʲɛt͡ɕ"),
-    ("umiem","ˈu.mʲɛm"),
-    ("siebie","ˈɕɛ.bʲɛ"),
-    ("nasz","naʂ"),
-    ("naszych","ˈna.ʂɨx"),
-    ("sen","sɛn"),
-    ("snów","snuf"),
-     
-    ("głowa","ˈɡwɔ.va"), # Understanding Polish voicing PDF
-    ("głowie","ˈɡwɔ.vʲɛ"),
-    ("pić","pʲit͡ɕ"),
-    ("bić","bʲit͡ɕ"),
-    ("płotem","ˈpwɔ.tɛm"),
-    ("błotem","bwɔ.tɛm"),
-    ("rysa","ˈrɨ.sa"),
-    ("ryza","ˈrɨ.za"),
-    ("ogień","ˈɔ.ɡʲɛɲ"),
-    ("waga","ˈva.ɡa"),
-    ("wag","vak"),
-    ("mózgu","ˈmuz.ɡu"),
-    ("mózg","musk"),
-    ("dobro","ˈdɔ.brɔ"),
-
-
-    # https://mowicpopolsku.com/polish-alphabet-pronunciation/
-    # alphabet
-    ("praca","ˈpra.t͡sa"), # a
-    ("mąż","mɔŋʂ"), # ą
-    ("niebo","ˈɲɛ.bɔ"), #  b
-    ("co","t͡sɔ"), # c
-    ("być","bɨt͡ɕ"), # ć
-    ("daleko","daˈlɛ.kɔ"), # d
-    ("też","tɛʂ"), # e
-    ("imię","ˈi.mʲɛ"), # ę
-    ("film","fʲilm"), # f
-    ("gość","ɡɔɕt͡ɕ"), # g
-    ("herbata","xɛrˈba.ta"), # h
-    ("iść","iɕt͡ɕ"), # i
-    ("jechać","ˈjɛ.xat͡ɕ"), # j
-    ("kawa","ˈka.va"), # k
-    ("lubić","ˈlu.bʲit͡ɕ"), # ll
-    ("miły","ˈmʲi.wɨ"), # ł
-    ("miły","ˈmʲi.wɨ"), # m
-    ("rano","ˈra.nɔ"), # n
-    ("tańczyć","ˈtaɲ.t͡ʂɨt͡ɕ"), # ń
-    ("okno","ˈɔknɔ"), # o
-    ("móc","mut͡s"), # ó
-    ("przerwa","ˈpʂɛr.va"), # p
-    ("robić","ˈrɔ.bʲit͡ɕ"), # r
-    ("syn","sɨn"), # s
-    ("środa","ˈɕrɔ.da"), # ś
-    ("teraz","ˈtɛ.ras"), # t
-    ("szukać","ˈʂu.kat͡ɕ"), # u
-    ("wolny","ˈvɔl.nɨ"), # w
-    ("czy","t͡ʂɨ"), # y
-    ("zamek","ˈza.mɛk"), # z
-    ("jeździć","ˈjɛʑ.d͡ʑit͡ɕ"), # ź
-    ("żona","ˈʐɔ.na"), # ż
-
-    ("mąż","mɔŋʂ"), # The letter ą
-    ("ząb","zɔmp"), 
-    ("miesiąc","ˈmʲɛ.ɕɔnt͡s"),
-    ("wziąć","vʑɔɲt͡ɕ"),
-    ("pociąg","ˈpɔ.t͡ɕɔŋk"),
+    # def trans(a):
+    #     return a
     
-    ("często","ˈt͡ʂɛ̃.stɔ"), # The letter ę
-    ("imię","ˈi.mʲɛ"),
-    ("zęby","ˈzɛm.bɨ"),
-    ("wszędzie","ˈfʂɛɲ.d͡ʑɛ"),
-    ("pięć","pʲɛɲt͡ɕ"),
-    ("piękny","ˈpʲɛŋ.knɨ"),
+    # https://mowicpopolsku.com/polish-alphabet-pronunciation/ (with sound)
     
-    ("chory","ˈxɔ.rɨ"),          # digraphs # ch
-    ("czuć","t͡ʂut͡ɕ"),            #  cz
-    ("dzwon","d͡zvɔn"),           # dz
-    ("odpowiedź","ɔtˈpɔ.vʲɛt͡ɕ"), # dź
-    ("dżem","d͡ʐɛm"),             # dż
-    ("rzadko","ˈʐat.kɔ"),        # rz
-    ("szukać","ˈʂu.kat͡ɕ"),       # sz
+    tests=(
+        ("umieć","ˈu.mʲɛt͡ɕ"),
+        ("umiem","ˈu.mʲɛm"),
+        ("siebie","ˈɕɛ.bʲɛ"),
+        ("nasz","naʂ"),
+        ("naszych","ˈna.ʂɨx"),
+        ("sen","sɛn"),
+        ("snów","snuf"),
+        
+        ("głowa","ˈɡwɔ.va"), # Understanding Polish voicing PDF
+        ("głowie","ˈɡwɔ.vʲɛ"),
+        ("pić","pʲit͡ɕ"),
+        ("bić","bʲit͡ɕ"),
+        ("płotem","ˈpwɔ.tɛm"),
+        ("błotem","bwɔ.tɛm"),
+        ("rysa","ˈrɨ.sa"),
+        ("ryza","ˈrɨ.za"),
+        ("ogień","ˈɔ.ɡʲɛɲ"),
+        ("waga","ˈva.ɡa"),
+        ("wag","vak"),
+        ("mózgu","ˈmuz.ɡu"),
+        ("mózg","musk"),
+        ("dobro","ˈdɔ.brɔ"),
+        
+        
+        # https://mowicpopolsku.com/polish-alphabet-pronunciation/
+        # alphabet
+        ("praca","ˈpra.t͡sa"), # a
+        ("mąż","mɔŋʂ"), # ą
+        ("niebo","ˈɲɛ.bɔ"), #  b
+        ("co","t͡sɔ"), # c
+        ("być","bɨt͡ɕ"), # ć
+        ("daleko","daˈlɛ.kɔ"), # d
+        ("też","tɛʂ"), # e
+        ("imię","ˈi.mʲɛ"), # ę
+        ("film","fʲilm"), # f
+        ("gość","ɡɔɕt͡ɕ"), # g
+        ("herbata","xɛrˈba.ta"), # h
+        ("iść","iɕt͡ɕ"), # i
+        ("jechać","ˈjɛ.xat͡ɕ"), # j
+        ("kawa","ˈka.va"), # k
+        ("lubić","ˈlu.bʲit͡ɕ"), # ll
+        ("miły","ˈmʲi.wɨ"), # ł
+        ("miły","ˈmʲi.wɨ"), # m
+        ("rano","ˈra.nɔ"), # n
+        ("tańczyć","ˈtaɲ.t͡ʂɨt͡ɕ"), # ń
+        ("okno","ˈɔknɔ"), # o
+        ("móc","mut͡s"), # ó
+        ("przerwa","ˈpʂɛr.va"), # p
+        ("robić","ˈrɔ.bʲit͡ɕ"), # r
+        ("syn","sɨn"), # s
+        ("środa","ˈɕrɔ.da"), # ś
+        ("teraz","ˈtɛ.ras"), # t
+        ("szukać","ˈʂu.kat͡ɕ"), # u
+        ("wolny","ˈvɔl.nɨ"), # w
+        ("czy","t͡ʂɨ"), # y
+        ("zamek","ˈza.mɛk"), # z
+        ("jeździć","ˈjɛʑ.d͡ʑit͡ɕ"), # ź
+        ("żona","ˈʐɔ.na"), # ż
+        
+        ("mąż","mɔŋʂ"), # The letter ą
+        ("ząb","zɔmp"), 
+        ("miesiąc","ˈmʲɛ.ɕɔnt͡s"),
+        ("wziąć","vʑɔɲt͡ɕ"),
+        ("pociąg","ˈpɔ.t͡ɕɔŋk"),
+        
+        ("często","ˈt͡ʂɛ̃.stɔ"), # The letter ę
+        ("imię","ˈi.mʲɛ"),
+        ("zęby","ˈzɛm.bɨ"),
+        ("wszędzie","ˈfʂɛɲ.d͡ʑɛ"),
+        ("pięć","pʲɛɲt͡ɕ"),
+        ("piękny","ˈpʲɛŋ.knɨ"),
+        
+        ("chory","ˈxɔ.rɨ"),          # digraphs # ch
+        ("czuć","t͡ʂut͡ɕ"),            #  cz
+        ("dzwon","d͡zvɔn"),           # dz
+        ("odpowiedź","ɔtˈpɔ.vʲɛt͡ɕ"), # dź
+        ("dżem","d͡ʐɛm"),             # dż
+        ("rzadko","ˈʐat.kɔ"),        # rz
+        ("szukać","ˈʂu.kat͡ɕ"),       # sz
+        
+        ("dzień","d͡ʑɛɲ"),                # Trigraphs # dzi
+        
+    )
     
-    ("dzień","d͡ʑɛɲ"),                # Trigraphs # dzi
-    
-)
-
-for (a,b) in tests:
-    print(a,b.replace('ˈ','').replace('.',''))
-    bb=convert(a,rerules,rules_with_symbols,g2p_dict,regex)
-    print(a,bb)
+    errornb=0
+    for (a,b) in tests:
+        print('------------')
+        print("ST",a)
+        b=b.replace('ˈ','').replace('.','')
+        print("WI",b)
+        bb=convert(a,rerules,rules_with_symbols,g2p_dict,regex)
+        if b != bb:
+            error="     <---- ERROR "+str(errornb)
+            errornb=errornb+1
+        else:
+            error=""
+            
+        print("AL",bb, error)
