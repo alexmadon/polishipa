@@ -3,6 +3,8 @@ import re
 # import regex as re
 import unicodedata
 import json
+
+import polishipa_tests
 xx="main"
 do_debug=False
 def debug(*args, sep=' ', end='\n'):
@@ -21,15 +23,29 @@ def get_rules_text():
 ::consonant:: = b|c|ć|cz|d|dź|dż|f|g|h|ch|j|k|l|ł|m|n|ń|p|r|s|ś|sz|t|w|z|ź|ż|rz
 % exceptions
 marzn -> mar2zn / # _
+restaura -> rɛsta4ra / # _
+au -> a5 / _
+klient -> klʲijɛnt / _
+
+ćdzie -> d͡ʑɛ / _
+źć -> ɕt͡ɕ / _
+
+% ą -> ɔ / _ ł
+% ą -> ɔ̃ / (cz|t͡ʂ|ʑ|zi) _ ł
 ą -> ɔm / _ b|p
-ą -> ɔɲ / _ ć|dź|dzi|ci|dź
+ą -> ɔɲ / _ ć|dź|dzi|ci|dź|ɕ|si
 ą -> ɔn / _ d|t|c|dz
 ą -> ɔŋ / _ g|k|ż
 ąź -> ɔɲɕ / _
+ąś -> ɔɲɕ / _
+
+
 ę -> ɛm / _ b|p
-ę -> ɛɲ / _ ć|dź|dzi|ci|dź
+ę -> ɛɲ / _ ć|dź|dzi|ci|dź|d͡ʑ|ś
 ę -> ɛn / _ d|t|c|dz
-ę -> ɛŋ / _ g|k
+ę -> ɛŋ / _ g|k|ż
+
+
 % Palatalized consonants
 ci -> t͡ɕ / _ (::vow_not_i::|ɛ|ɔ)
 dzi -> d͡ʑ / _ (::vow_not_i::|ɛ|ɔ)
@@ -39,27 +55,36 @@ ni -> ɲ / _ (::vow_not_i::|ɛ|ɔ)
 ki -> kʲ / _ e
 gi -> ɡʲ / _ e
 % alex: more ʲ
-świ -> ɕfʲ / _ (ę|ɛ)
-kwi -> kfʲ / _ (ę|ɛ|e)
+wi -> fʲi / ch _ l
+świ -> ɕfʲ / _ (ę|ɛ|e|a|o|ɔ)
+kwi -> kfʲ / _ (ę|ɛ|e|a|o|ɔ)
+twi -> tfʲ / _ (ę|ɛ|e|a|o|ɔ)
 szw -> ʂf / _ (e|ɛ)
+szpi -> ʂpʲ / _ (e|ɛ)
 gwi -> ɡvʲ / _ a
 wi -> vʲ / _ a
 ższ -> ʂʂ / _
-mi -> mʲ / _ (e|ę#|ɛ|a)
-bi -> bʲ / _ (e|ę#|ɛ)
-pi -> pʲ / _ (e|ę#|ɛ|a)
-wi -> wʲ / _ (e|ę#|ɛ|o|ɔ)
+mi -> mʲ / _ (e|ę#|ɛ|a|ą|o|ɔ)
+bi -> bʲ / _ (e|ę#|ɛ|a|ą|o|ɔ|u)
+pi -> pʲ / _ (e|ę#|ɛ|a|ą|o|ɔ)
+wi -> wʲ / _ (e|ę#|ɛ|a|ą|o|ɔ)
+li -> lʲ / _ (e|ę#|ɛ|a|ą|o|ɔ)
+wi -> fʲi / (ć|t) _ (ć|cz|#)
 wi -> wʲi / _ #
-mi -> mʲi / _ (ł|l|n)
-bi -> bʲi / _ (ć|ł|l)
-pi -> pʲi / _ (ć|n|s)
+
+mi -> mʲi / _ (ł|l|n|#)
+bi -> bʲi / _ (c|ć|ł|l|m|sz|t͡ɕ|s|#)
+pi -> pʲi / _ (ć|n|ɲ|s|ł|l|c|t͡ɕ|#)
 fi -> fʲi / _ (ł|l)
-li -> lʲi / _ (k|s|c|#)
-wi -> vʲi / _ (ć|n|s)
+li -> lʲi / _ (k|s|c|ś|ɕ|z|ż|ʐ|t͡ɕ|ć|w|#)
+wi -> vʲi / _ (ć|n|s|ś|ɕ|d|ɲ|ł)
 % 
-v -> f / _ (sz|ʂ|cz|k|s)
-w -> f / _ (sz|ʂ|cz|k|s)
-d -> t / _ (p|k)
+
+
+w -> f / (s|t|cz) _ (a|o|e)
+v -> f / _ (sz|ʂ|cz|k|s|t|c)
+w -> f / _ (sz|ʂ|cz|k|s|t|c|ɕ)
+d -> t / _ (p|k|f|t)
 % alex: Final obstruent devoicing
 % b -> p / _ #|(::consonant::)(::vowel::)
 zd -> st / _ #
@@ -76,9 +101,11 @@ z -> s / (::vowel::) _ #
 rz -> sz /_ #
 dź -> ć / _ #
 dz -> c / _ #
+b -> p / _ (k|c|t͡ɕ)
 k -> g / _ ż
 ś -> ʑ / _ b
 ź -> ɕ / _ k
+z -> s / _ p
 si -> ɕ / _ ɔ
 zi -> ʑ / _ ɔ
 ci ->  t͡ɕ  / _ ɔ
@@ -89,6 +116,7 @@ z -> ʑ / _ i
 n -> ɲ / _ i
 k -> kʲ / _ i
 g -> ɡʲ / _ i
+
 % Glide formation
 u -> w / (::vowel::) _
 % i -> j / (::vowel::) _ (::consonant::)
@@ -101,6 +129,9 @@ rz -> ʂ / (k|ch|p|t) _
 ą -> ɔ / _ (l|ł|m|n|ɲ|ŋ)
 ę -> ɛ / _ (l|ł|m|n|ɲ|ŋ)
 ę -> ɛ / _ #
+
+% n -> ɲ / (ɛ|e) _ (n|ɲ)
+
 """
     return rules_text
 def get_g2p_map():
@@ -146,6 +177,8 @@ def get_g2p_map():
         ("ż","ʐ"),
         ("rz","ʐ"),
         ("r2z","rz"),
+        ("4","w"),
+        ("5","u"),
     ]
     return g2p_map
 def get_symbols(rules_text):
@@ -287,7 +320,7 @@ if __name__ == "__main__":
     
     # https://mowicpopolsku.com/polish-alphabet-pronunciation/ (with sound)
     
-    tests=(
+    tests1=(
         ("umieć","ˈu.mʲɛt͡ɕ"),
         ("umiem","ˈu.mʲɛm"),
         ("siebie","ˈɕɛ.bʲɛ"),
@@ -777,8 +810,169 @@ if __name__ == "__main__":
         ("ojciec","ˈɔj.t͡ɕɛt͡s"),
         ("wdowiec","ˈvdɔ.vʲɛt͡s"),
         ("kupiec","ˈku.pʲɛt͡s"),
+
+        # songs
+        ("ląd","lɔnt"),
+        ("innej","ˈin.nɛj"),
+        ("niczym","ˈɲi.t͡ʂɨm"),
+        ("drzwi","dʐvʲi"),
+        ("niewiele","ɲɛˈvʲɛ.lɛ"),
+        ("tylko","ˈtɨl.kɔ"),
+        ("czarne","ˈt͡ʂar.nɛ"),
+        ("dnie","dɲɛ"),
+        ("kochanej","kɔˈxa.nɛj"),
+        ("będziesz","ˈbɛɲ.d͡ʑɛʂ"),
+        ("kilka","ˈkʲil.ka"),
+        ("tobą","ˈtɔ.bɔ̃"),
+        ("dźwięk","d͡ʑvʲɛŋk"),
+        ("siebie","ˈɕɛ.bʲɛ"),
+        ("tobie","ˈtɔ.bʲɛ"),
+        ("wiatr","vʲatr"),
+        ("środku","ˈɕrɔt.ku"),
+        ("Bóg","buk"),
+        ("pamiętam","paˈmʲɛn.tam"),
+        ("dziewczyno","d͡ʑɛfˈt͡ʂɨ.nɔ"),
+        ("smutna","ˈsmut.na"),
+        ("skąd","skɔnt"),
+        ("uśmiech","ˈuɕ.mʲɛx"),
+        ("zdjęć","zdjɛɲt͡ɕ"),
+        ("sobie","ˈsɔ.bʲɛ"),
+        ("pewnie","ˈpɛv.ɲɛ"),
+        ("dwie","dvʲɛ"),
+        ("kotku","ˈkɔt.ku"),
+        ("że","ʐɛ"),
+        ("drań","draɲ"),
+        ("tamtą","ˈtam.tɔ̃"),
+        ("jesteś","ˈjɛ.stɛɕ"),
+        ("rośnie","ˈrɔɕ.ɲɛ"),
+        ("pragnę","ˈpraɡ.nɛ"),
+        ("potrzebuje","pɔt.ʂɛˈbu.jɛ"),
+        ("musisz","ˈmu.ɕiʂ"),
+        ("boję","ˈbɔ.jɛ"),
+        ("każdy","ˈkaʐ.dɨ"),
+        ("pięć","pʲɛɲt͡ɕ"),
+        ("kochana","kɔˈxa.na"),
+        ("które","ˈktu.rɛ"),
+        ("wiesz","vʲɛʂ"),
+        ("chwilę","ˈxfʲi.lɛ"),
+        ("mieście","ˈmʲɛɕ.t͡ɕɛ"),
+        ("miłość","ˈmʲi.wɔɕt͡ɕ"),
+        ("miłości","mʲiˈwɔɕ.t͡ɕi"),
+        ("przy","pʂɨ"),
+        ("dnia","dɲa"),
+        ("sercu","ˈsɛr.t͡su"),
+        ("mówić","ˈmu.vʲit͡ɕ"),
+        ("będę","ˈbɛn.dɛ"),
+        ("cały","ˈt͡sa.wɨ"),
+        ("znów","znuf"),
+        ("dziewczyna","d͡ʑɛfˈt͡ʂɨ.na"),
+        ("tamtej","ˈtam.tɛj"),
+        ("mądry","ˈmɔn.drɨ"),
+        ("mnie","mɲɛ"),
+        ("dzwon","d͡zvɔn"),
+        ("twoje","ˈtfɔ.jɛ"),
+        ("plany","ˈpla.nɨ"),
+        ("innego","inˈnɛ.ɡɔ"),
+        ("moim","ˈmɔ.im"),
+        ("zimny","ˈʑim.nɨ"),
+        ("rozmaryn","rɔzˈma.rɨn"),
+        ("powiedzieć","pɔˈvʲɛ.d͡ʑɛt͡ɕ"),
+        ("nigdy","ˈɲiɡ.dɨ"),
+        ("jaką","ˈja.kɔ̃"),
+        ("ciągle","ˈt͡ɕɔŋ.ɡlɛ"),
+        ("imię","ˈi.mʲɛ"),
+        ("liście","ˈlʲiɕ.t͡ɕɛ"),
+        ("jeszcze","ˈjɛʂ.t͡ʂɛ"),
+        ("nieznany","ɲɛzˈna.nɨ"),
+        ("ładny","ˈwad.nɨ"),
+        ("gwiazd","ɡvʲast"),
+        ("umiem","ˈu.mʲɛm"),
+        ("piękna","ˈpʲɛŋ.kna"),
+        ("często","ˈt͡ʂɛ̃.stɔ"),
+        ("mylisz","ˈmɨ.lʲiʂ"),
+        ("cień","t͡ɕɛɲ"),
+        ("namiętność","naˈmʲɛn.tnɔɕt͡ɕ"),
+        ("miał","mʲaw"),
+        ("istnieje","iˈstɲɛ.jɛ"),
+        ("twoich","ˈtfɔ.ix"),
+        ("śnić","ɕɲit͡ɕ"),
+        ("głowie","ˈɡwɔ.vʲɛ"),
+        ("piach","pʲax"),
+        ("zmieniło","zmʲɛˈɲi.wɔ"),
+        ("wiersz","vʲɛrʂ"),
+        ("już","juʂ"),
+        ("ją","jɔ̃"),
+        ("ramiona","raˈmʲɔ.na"),
+        ("wiedzieć","ˈvʲɛ.d͡ʑɛt͡ɕ"),
+        ("moich","ˈmɔ.ix"),
+        ("wszystko","ˈfʂɨ.stkɔ"),
+        ("przed","pʂɛt"),
+        ("czasie","ˈt͡ʂa.ɕɛ"),
+        ("strony","ˈstrɔ.nɨ"),
+        ("ślad","ɕlat"),
+        ("coś","t͡sɔɕ"),
+        ("łączy","ˈwɔn.t͡ʂɨ"),
+        ("pięknej","ˈpʲɛŋ.knɛj"),
+        ("czy","t͡ʂɨ"),
+        ("myśl","mɨɕl"),
+        ("smutna","ˈsmut.na"),
+        ("przez","pʂɛs"),
+        ("niej","ɲɛj"),
+        ("każdą","ˈkaʐ.dɔ̃"),
+        ("jedną","ˈjɛd.nɔ̃"),
+        ("choć","xɔt͡ɕ"),
+    
+        ("niebie","ˈɲɛ.bʲɛ"),
+        ("znam","znam"),
+        ("oczekuje","ɔ.t͡ʂɛˈku.jɛ"),
+        ("stąd","stɔnt"),
+        ("słów","swuf"),
+        ("zielona","ʑɛˈlɔ.na"),
+        ("twarzy","ˈtfa.ʐɨ"),
+        ("ust","ust"),
+        ("wszystkie","ˈfʂɨ.stkʲɛ"),
+        ("każda","ˈkaʐ.da"),
+        ("boski","ˈbɔs.kʲi"),
+        ("zimową","ʑiˈmɔ.vɔ̃"),
+        ("czas","t͡ʂas"),
+        ("zdjęcia","ˈzdjɛɲ.t͡ɕa"),
+        ("dostanie","dɔˈsta.ɲɛ"),
+        ("dziewczynę","d͡ʑɛfˈt͡ʂɨ.nɛ"),
+        ("każdym","ˈkaʐ.dɨm"),
+        ("przyjemność","pʂɨˈjɛm.nɔɕt͡ɕ"),
+        ("inaczej","iˈna.t͡ʂɛj"),
+        ("blask","blask"),
+        ("gwiazda","ˈɡvʲaz.da"),
+        ("uwielbiam","uˈvʲɛl.bʲam"),
+        ("kobieta","kɔˈbʲɛ.ta"),
+        ("sprawia","ˈspra.vʲa"),
+        ("czego","ˈt͡ʂɛ.ɡɔ"),
+        ("zabrane","zaˈbra.nɛ"),
+        ("świat","ɕfʲat"),
+        ("widzę","ˈvʲi.d͡zɛ"),
+        ("patrzy","ˈpat.ʂɨ"),
+        ("chciało","ˈxt͡ɕa.wɔ"),
+        ("młoda","ˈmwɔ.da"),
+        ("znasz","znaʂ"),
+        ("zielonej","ʑɛˈlɔ.nɛj"),
+        ("twoją","ˈtfɔ.jɔ̃"),
+        ("kryje","ˈkrɨ.jɛ"),
+        ("każdej","ˈkaʐ.dɛj"),
+        ("dziś","d͡ʑiɕ"),
+        ("pragnie","ˈpraɡ.ɲɛ"),
+        ("lecz","lɛt͡ʂ"),
+        ("oczy","ˈɔ.t͡ʂɨ"),
+        ("dzisiaj","ˈd͡ʑi.ɕaj"),
+        ("jaskrawych","jaˈskra.vɨx"),
+        ("bystry","ˈbɨ.strɨ"),
+        ("lubią","ˈlu.bʲɔ̃"),
+        ("wciąż","ft͡ɕɔŋʂ"),
+        ("młoda","ˈmwɔ.da"),
+        ("proszę","ˈprɔ.ʂɛ"),
+        
     )
-            
+    tests2=polishipa_tests.get_tests()
+    tests=tests1+tests2
     errornb=0
     i=0
     for (a,b) in tests:
