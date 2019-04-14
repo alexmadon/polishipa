@@ -41,3 +41,7 @@ Requires: setuptools, unicodecsv, panphon, regex, marisa-trie
 ## Usage
 
 to use the package call the setup() function and then convert() on the text you want to convert to IPA.
+
+
+
+https://packages.debian.org/stretch/wpolish
