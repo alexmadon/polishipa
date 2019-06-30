@@ -22,9 +22,9 @@ def get_rules_text():
 ::vow_not_i:: = a|ą|e|ę|o|ó|u|y
 ::consonant:: = b|c|ć|cz|d|dź|dż|f|g|h|ch|j|k|l|ł|m|n|ń|p|r|s|ś|sz|t|w|z|ź|ż|rz
 % exceptions
-marzn -> mar2zn / # _
-restaura -> rɛsta4ra / # _
-au -> a5 / _
+marzn -> mar⇶zn / # _
+restaura -> rɛsta⇷ra / # _
+au -> a⇸ / _
 klient -> klʲijɛnt / _
 
 ćdzie -> d͡ʑɛ / _
@@ -176,9 +176,9 @@ def get_g2p_map():
         ("ź","ʑ"),
         ("ż","ʐ"),
         ("rz","ʐ"),
-        ("r2z","rz"),
-        ("4","w"),
-        ("5","u"),
+        ("r⇶z","rz"), # use https://www.w3schools.com/charsets/ref_utf_arrows.asp
+        ("⇷","w"),
+        ("⇸","u"),
     ]
     return g2p_map
 def get_symbols(rules_text):
